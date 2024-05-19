@@ -379,8 +379,6 @@ export default class Alert {
     const alertIcon = document.createElement('div');
     alertIcon.classList.add(this._CSS.wrapperForAlertIcon);
     alertIcon.innerHTML = this._getAlertIcon(this.currentType);
-    console.log(this.currentType);
-    console.log(this._getAlertIcon(this.currentType));
 
     const alertContent = document.createElement('div');
     alertContent.classList.add(
@@ -526,15 +524,12 @@ export default class Alert {
       )
     );
 
-    let alertStyles = [];
-    if (this.availableStyles.length > 1) {
-      alertStyles = this.availableStyles.map((style) => 
-        this._createSetting(
-          this._getAlertStyleIcon(style), this._getFormattedLabel(style), () => this._setAlertStyle(style), 
-          style === this.currentStyle, 'alert-style'
-        )
-      );
-    }
+    const alertStyles = this.availableStyles.map((style) => 
+      this._createSetting(
+        this._getAlertStyleIcon(style), this._getFormattedLabel(style), () => this._setAlertStyle(style), 
+        style === this.currentStyle, 'alert-style'
+      )
+    );
 
     const alignTypes = this.availableAlignTypes.map((align) => 
       this._createSetting(
