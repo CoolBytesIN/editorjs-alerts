@@ -1,6 +1,6 @@
 .ce-alert {
 	display: flex;
-	padding: 12px 18px;
+	padding: 13px 18px;
 	margin: 16px 0px;
 	border-radius: 3px;
 	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px -1px;
@@ -9,12 +9,14 @@
 
 .ce-alert-icon {
 	margin: auto 12px auto 0px;
+	height: 24px;
 }
 
 .ce-alert-content {
 	flex-grow: 1;
 	margin: auto;
 	outline: none;
+	word-wrap: anywhere;
 }
 
 /* Alert Styles (Pastel) */
