@@ -1,29 +1,103 @@
-.cb-delimiter {
-	line-height: 1.6em;
-	width: 100%;
-	text-align: center;
-	color: black;
+.ce-alert {
+	display: flex;
+	padding: 12px 18px;
+	margin: 16px 0px;
+	border-radius: 3px;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px -1px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px -1px;
 }
 
-/* Delimiter styles */
-.cb-delimiter-star span {
-	font-size: 30px;
-	line-height: 65px;
-	display: inline-block;
-	height: 30px;
-	letter-spacing: 0.2em;
-	font-weight: 900;
+.ce-alert-icon {
+	margin: auto 12px auto 0px;
 }
-.cb-delimiter-dash span {
-	margin: 10px;
-	display: inline-block;
-	height: 30px;
-	letter-spacing: 0.6em;
-	font-weight: 900;
+
+.ce-alert-content {
+	flex-grow: 1;
+	margin: auto;
+	outline: none;
 }
-.cb-delimiter-line hr {
-	font-size: 48px;
-	border-style: solid;
-	border-color: black;
-	border-radius: 3px;
+
+/* Alert Styles (Pastel) */
+.ce-alert-pastel-info {
+	color: #004085;
+  background-color: #cce5ff;
+}
+.ce-alert-pastel-success {
+	color: #155724;
+  background-color: #d4edda;
+}
+.ce-alert-pastel-blocked {
+	background: #fff1f1;
+  color: #8c1515;
+}
+.ce-alert-pastel-warning {
+	color: #42340a;
+  background-color: #fff3cd;
+}
+.ce-alert-pastel-danger {
+	background: #ffd0d0;
+  color: #a80c0c;
+}
+
+/* Alert Styles (Solid) */
+.ce-alert-solid-info {
+	background: #197fca;
+  color: #fff;
+}
+.ce-alert-solid-success {
+	background: #22a478;
+  color: #fff;
+}
+.ce-alert-solid-blocked {
+	background: #ffe0e0;
+  color: #8c1515;
+}
+.ce-alert-solid-warning {
+	background: #ffe595;
+  color: #303030;
+}
+.ce-alert-solid-danger {
+	background: #d66363;
+  color: #fff;
+}
+
+/* Alert Styles (Outlined) */
+.ce-alert-outlined-info {
+	color: #00528e;
+  background-color: #f7fafc;
+  border: 2px solid #197fca;
+}
+.ce-alert-outlined-success {
+	color: #00704a;
+  background-color: #f7fcf7;
+  border: 2px solid #3d9970;
+}
+.ce-alert-outlined-blocked {
+	color: #863a3a;
+  background-color: #fcf7f7;
+  border: 2px solid #ae6767;
+}
+.ce-alert-outlined-warning {
+	color: #9b7810;
+  background-color: #fcfbf7;
+  border: 2px solid #eeca5b;
+}
+.ce-alert-outlined-danger {
+	color: #b20e0e;
+  background-color: #fcf7f7;
+  border: 2px solid #d06868;
+}
+
+/* Alignment */
+.ce-alert-align-left {
+	text-align: left;
+}
+.ce-alert-align-center {
+	text-align: center;
+}
+.ce-alert-align-right {
+	text-align: right;
+}
+.ce-alert-align-justify {
+	text-align: justify;
 }

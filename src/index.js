@@ -1,21 +1,30 @@
 require('./index.css');
 
-import { IconDelimiter } from '@codexteam/icons';
+const infoIcon = require('./icons/info.js');
+const successIcon = require('./icons/success.js');
+const blockedIcon = require('./icons/blocked.js');
+const warningIcon = require('./icons/warning.js');
+const dangerIcon = require('./icons/danger.js');
+const pastelIcon = require('./icons/pastel.js');
+const solidIcon = require('./icons/solid.js');
+const outlinedIcon = require('./icons/outlined.js');
+const getAlignmentIcon = require('./icons/alignment.js');
 
 /**
- * Delimiter plugin for Editor.js
+ * Alert plugin for Editor.js
  * Supported config:
- *     * defaultStyle {string} (Default: 'star')
- *     * styles {string[]} (Default: Delimiter.DELIMITER_STYLES)
- *     * defaultLineWidth {number} (Default: 25)
- *     * lineWidths {number[]} (Default: Delimiter.LINE_WIDTHS)
- *     * defaultLineThickness {string} (Default: '1px')
- *     * lineThickness {string[]} (Default: Delimiter.LINE_THICKNESS)
+ *     * alertTypes {string[]} (Default: Alert.ALERT_TYPES)
+ *     * defaultAlertType {string} (Default: 'info')
+ *     * alertStyles {string[]} (Default: Alert.ALERT_STYLES)
+ *     * defaultAlertStyle {string} (Default: 'pastel')
+ *     * alignTypes {string[]} (Default: Alert.ALIGN_TYPES)
+ *     * defaultAlignType {string} (Default: 'left')
  *
- * @class Delimiter
- * @typedef {Delimiter}
+ * @export
+ * @class Alert
+ * @typedef {Alert}
  */
-export default class Delimiter {
+export default class Alert {
   /**
    * Editor.js Toolbox settings
    *
@@ -25,7 +34,7 @@ export default class Delimiter {
    */
   static get toolbox() {
     return {
-      icon: IconDelimiter, title: 'Delimiter',
+      icon: infoIcon, title: 'Alert',
     };
   }
 
@@ -41,69 +50,69 @@ export default class Delimiter {
   }
 
   /**
-   * All supported delimiter styles
+   * All supported alert types
    *
    * @static
    * @readonly
    * @type {string[]}
    */
-  static get DELIMITER_STYLES() {
-    return ['star', 'dash', 'line'];
+  static get ALERT_TYPES() {
+    return ['info', 'success', 'blocked', 'warning', 'danger'];
   }
 
   /**
-   * Default delimiter style
+   * Default alert type
    *
    * @static
    * @readonly
    * @type {string}
    */
-  static get DEFAULT_DELIMITER_STYLE() {
-    return 'star';
+  static get DEFAULT_ALERT_TYPE() {
+    return 'info';
   }
 
   /**
-   * All supported widths for delimiter line style
-   *
-   * @static
-   * @readonly
-   * @type {number[]}
-   */
-  static get LINE_WIDTHS() {
-    return [8, 15, 25, 35, 50, 60, 100];
-  }
-
-  /**
-   * Default width for delimiter line style
-   *
-   * @static
-   * @readonly
-   * @type {number}
-   */
-  static get DEFAULT_LINE_WIDTH() {
-    return 25;
-  }
-
-  /**
-   * All supported thickness options for delimiter line style
+   * All supported alert styles
    *
    * @static
    * @readonly
    * @type {string[]}
    */
-  static get LINE_THICKNESS() {
-    return ['0.5px', '1px', '1.5px', '2px', '2.5px', '3px'];
+  static get ALERT_STYLES() {
+    return ['pastel', 'solid', 'outlined'];
   }
 
   /**
-   * Default thickness for delimiter line style
+   * Default alert style
    *
    * @static
    * @readonly
    * @type {string}
    */
-  static get DEFAULT_LINE_THICKNESS() {
-    return '1px';
+  static get DEFAULT_ALERT_STYLE() {
+    return 'pastel';
+  }
+
+  /**
+   * All supported alignment types
+   *
+   * @static
+   * @readonly
+   * @type {string[]}
+   */
+  static get ALIGN_TYPES() {
+    return ['left', 'center', 'right', 'justify'];
+  }
+
+  /**
+   * Default alignment type
+   *
+   * @static
+   * @readonly
+   * @type {string}
+   */
+  static get DEFAULT_ALIGN_TYPE() {
+    return 'left';
   }
 
   /**
@@ -111,143 +120,161 @@ export default class Delimiter {
    *
    * @static
    * @readonly
-   * @type {{ style: boolean; lineWidth: boolean; lineThickness: boolean; }}
+   * @type {{ text: {}; alert: boolean; alertStyle: boolean; align: boolean; }}
    */
   static get sanitize() {
     return {
-      style: false,
-      lineWidth: false,
-      lineThickness: false,
+      text: {},
+      alert: false,
+      alertStyle: false,
+      align: false,
     };
   }
 
   /**
-   * Creates an instance of Delimiter.
+   * Editor.js config to convert one block to another
+   *
+   * @static
+   * @readonly
+   * @type {{ export: string; import: string; }}
+   */
+  static get conversionConfig() {
+    return {
+      export: 'text', // this property of tool data will be used as string to pass to other tool
+      import: 'text', // to this property imported string will be passed
+    };
+  }
+
+  /**
+   * Creates an instance of Alert.
    *
    * @constructor
-   * @param {{ api: {}; config: {}; data: {}; }} props
+   * @param {{ api: {}; readOnly: boolean; config: {}; data: {}; }} props
    */
   constructor({
-    api, config, data,
+    api, readOnly, config, data,
   }) {
     this._api = api;
+    this._readOnly = readOnly;
     this._config = config || {};
     this._data = this._normalizeData(data);
     this._CSS = {
-      block: this._api.styles.block,
-      wrapper: 'cb-delimiter',
-      wrapperForStyle: (style) => `cb-delimiter-${style}`,
+      wrapper: 'ce-alert',
+      wrapperForAlertIcon: 'ce-alert-icon',
+      wrapperForAlertContent: 'ce-alert-content',
+      wrapperForAlertStyle: (alertType, alertStyle) => `ce-alert-${alertStyle}-${alertType}`,
+      wrapperForAlignment: (alignType) => `ce-alert-align-${alignType}`,
     };
     this._element = this._getElement();
   }
 
   /**
-   * All available delimiter styles
-   * - Finds intersection between supported and user selected delimiter styles
+   * All available alert types
+   * - Finds intersection between supported and user selected types
    *
    * @readonly
    * @type {string[]}
    */
-  get availableDelimiterStyles() {
-    return this._config.styles ? Delimiter.DELIMITER_STYLES.filter(
-      (style) => this._config.styles.includes(style),
-    ) : Delimiter.DELIMITER_STYLES;
+  get availableTypes() {
+    return this._config.alertTypes ? Alert.ALERT_TYPES.filter(
+      (type) => this._config.alertTypes.includes(type),
+    ) : Alert.ALERT_TYPES;
   }
 
   /**
-   * User's default delimiter style
+   * User's default alert type
    * - Finds union of user choice and the actual default
    *
    * @readonly
    * @type {string}
    */
-  get userDefaultDelimiterStyle() {
-    if (this._config.defaultStyle) {
-      const userSpecified = this.availableDelimiterStyles.find(
-        (style) => style === this._config.defaultStyle,
+  get userDefaultType() {
+    if (this._config.defaultAlertType) {
+      const userSpecified = this.availableTypes.find(
+        (type) => type === this._config.defaultAlertType,
       );
       if (userSpecified) {
         return userSpecified;
       }
       // eslint-disable-next-line no-console
-      console.warn('(ง\'̀-\'́)ง Delimiter Tool: the default style specified is invalid');
+      console.warn('(ง\'̀-\'́)ง Alert Tool: the default alert type specified is invalid');
     }
-    return Delimiter.DEFAULT_DELIMITER_STYLE;
+    return Alert.DEFAULT_ALERT_TYPE;
   }
 
   /**
-   * All available widths for delimiter line style
-   * - Finds all valid user selected line widths (falls back to default when empty)
-   *
-   * @readonly
-   * @type {number[]}
-   */
-  get availableLineWidths() {
-    return this._config.lineWidths ? Delimiter.LINE_WIDTHS.filter(
-      (width) => this._config.lineWidths.includes(width),
-    ) : Delimiter.LINE_WIDTHS;
-  }
-
-  /**
-   * User's default line width
-   * - Finds union of user choice and the actual default
-   *
-   * @readonly
-   * @type {number}
-   */
-  get userDefaultLineWidth() {
-    if (this._config.defaultLineWidth) {
-      const userSpecified = this.availableLineWidths.find(
-        (width) => width === this._config.defaultLineWidth,
-      );
-      if (userSpecified) {
-        return userSpecified;
-      }
-      // eslint-disable-next-line no-console
-      console.warn('(ง\'̀-\'́)ง Delimiter Tool: the default line width specified is invalid');
-    }
-    return Delimiter.DEFAULT_LINE_WIDTH;
-  }
-
-  /**
-   * All available line thickness options
-   * - Finds intersection between supported and user selected line thickness options
+   * All available alert styles
+   * - Finds intersection between supported and user selected styles
    *
    * @readonly
    * @type {string[]}
    */
-  get availableLineThickness() {
-    return this._config.lineThickness ? Delimiter.LINE_THICKNESS.filter(
-      (thickness) => this._config.lineThickness.includes(thickness),
-    ) : Delimiter.LINE_THICKNESS;
+  get availableStyles() {
+    return this._config.alertStyles ? Alert.ALERT_STYLES.filter(
+      (style) => this._config.alertStyles.includes(style),
+    ) : Alert.ALERT_STYLES;
   }
 
   /**
-   * User's default line thickness
+   * User's default alert style
    * - Finds union of user choice and the actual default
    *
    * @readonly
    * @type {string}
    */
-  get userDefaultLineThickness() {
-    if (this._config.defaultLineThickness) {
-      const userSpecified = this.availableLineThickness.find(
-        (thickness) => thickness === this._config.defaultLineThickness,
+  get userDefaultStyle() {
+    if (this._config.defaultAlertStyle) {
+      const userSpecified = this.availableStyles.find(
+        (style) => style === this._config.defaultAlertStyle,
       );
       if (userSpecified) {
         return userSpecified;
       }
       // eslint-disable-next-line no-console
-      console.warn('(ง\'̀-\'́)ง Delimiter Tool: the default line thickness specified is invalid');
+      console.warn('(ง\'̀-\'́)ง Alert Tool: the default alert style specified is invalid');
     }
-    return Delimiter.DEFAULT_LINE_THICKNESS;
+    return Alert.DEFAULT_ALERT_STYLE;
+  }
+
+  /**
+   * All available alignment types
+   * - Finds intersection between supported and user selected alignment types
+   *
+   * @readonly
+   * @type {string[]}
+   */
+  get availableAlignTypes() {
+    return this._config.alignTypes ? Alert.ALIGN_TYPES.filter(
+      (align) => this._config.alignTypes.includes(align),
+    ) : Alert.ALIGN_TYPES;
+  }
+
+  /**
+   * User's default alignment type
+   * - Finds union of user choice and the actual default
+   *
+   * @readonly
+   * @type {string}
+   */
+  get userDefaultAlignType() {
+    if (this._config.defaultAlignType) {
+      const userSpecified = this.availableAlignTypes.find(
+        (align) => align === this._config.defaultAlignType,
+      );
+      if (userSpecified) {
+        return userSpecified;
+      }
+      // eslint-disable-next-line no-console
+      console.warn('(ง\'̀-\'́)ง Alert Tool: the default align type specified is invalid');
+    }
+    return Alert.DEFAULT_ALIGN_TYPE;
   }
 
   /**
    * To normalize input data
    *
    * @param {*} data
-   * @returns {{ style: string; lineWidth: number; lineThickness: string; }}
+   * @returns {{ text: string; alert: string; alertStyle: string; align: string; }}
    */
   _normalizeData(data) {
     const newData = {};
@@ -255,71 +282,89 @@ export default class Delimiter {
       data = {};
     }
 
-    newData.style = data.style || this.userDefaultDelimiterStyle;
-    newData.lineWidth = parseInt(data.lineWidth, 10) || this.userDefaultLineWidth;
-    newData.lineThickness = data.lineThickness || this.userDefaultLineThickness;
+    newData.text = data.text || '';
+    newData.alert = data.alert || this.userDefaultType;
+    newData.alertStyle = data.alertStyle || this.userDefaultStyle;
+    newData.align = data.align || this.userDefaultAlignType;
     return newData;
   }
 
   /**
-   * Current delimiter style
+   * Current alert type
    *
    * @readonly
    * @type {string}
    */
-  get currentDelimiterStyle() {
-    let delimiterStyle = this.availableDelimiterStyles.find((style) => style === this._data.style);
-    if (!delimiterStyle) {
-      delimiterStyle = this.userDefaultDelimiterStyle;
+  get currentType() {
+    let alertType = this.availableTypes.find((type) => type === this._data.alert);
+    if (!alertType) {
+      alertType = this.userDefaultType;
     }
-    return delimiterStyle;
+    return alertType;
   }
 
   /**
-   * Current width for delimiter line style
-   *
-   * @readonly
-   * @type {number}
-   */
-  get currentLineWidth() {
-    let lineWidth = this.availableLineWidths.find((width) => width === this._data.lineWidth);
-    if (!lineWidth) {
-      lineWidth = this.userDefaultLineWidth;
-    }
-    return lineWidth;
-  }
-
-  /**
-   * Current thickness for delimiter line style
+   * Current alert style
    *
    * @readonly
    * @type {string}
    */
-  get currentLineThickness() {
-    let lineThickness = this.availableLineThickness.find(
-      (thickness) => thickness === this._data.lineThickness,
-    );
-    if (!lineThickness) {
-      lineThickness = this.userDefaultLineThickness;
+  get currentStyle() {
+    let alertStyle = this.availableStyles.find((style) => style === this._data.alertStyle);
+    if (!alertStyle) {
+      alertStyle = this.userDefaultStyle;
     }
-    return lineThickness;
+    return alertStyle;
   }
 
-  createChildElement() {
-    let child;
-    if (this.currentDelimiterStyle === 'star') {
-      child = document.createElement('span');
-      child.textContent = '***';
-      return child;
-    } if (this.currentDelimiterStyle === 'dash') {
-      child = document.createElement('span');
-      child.textContent = '———';
-      return child;
+  /**
+   * Current alignment type
+   *
+   * @readonly
+   * @type {string}
+   */
+  get currentAlignType() {
+    let alignType = this.availableAlignTypes.find((align) => align === this._data.align);
+    if (!alignType) {
+      alignType = this.userDefaultAlignType;
     }
-    child = document.createElement('hr');
-    child.style.width = `${this.currentLineWidth}%`;
-    child.style.borderWidth = this.currentLineThickness;
-    return child;
+    return alignType;
+  }
+
+  /**
+   * Get Alert Type icon
+   *
+   * @param {string} alertType
+   * @returns {string}
+   */
+  _getAlertIcon(alertType) {
+    if (alertType === 'success') {
+      return successIcon;
+    } else if (alertType === 'blocked') {
+      return blockedIcon;
+    } else if (alertType === 'warning') {
+      return warningIcon;
+    } else if (alertType === 'danger') {
+      return dangerIcon;
+    } else {
+      return infoIcon; // Default icon for when alertType doesn't match any key
+    }
+  }
+
+  /**
+   * Get Alert Style icon
+   *
+   * @param {string} alertStyle
+   * @returns {string}
+   */
+  _getAlertStyleIcon(alertStyle) {
+    if (alertStyle === 'solid') {
+      return solidIcon;
+    } else if (alertStyle === 'outlined') {
+      return outlinedIcon;
+    } else {
+      return pastelIcon; // Default icon for when alertStyle doesn't match any key
+    }
   }
 
   /**
@@ -328,83 +373,79 @@ export default class Delimiter {
    * @returns {*}
    */
   _getElement() {
-    const div = document.createElement('DIV');
-    div.classList.add(
-      this._CSS.wrapper,
-      this._CSS.block,
-      this._CSS.wrapperForStyle(this.currentDelimiterStyle),
+    const alertContainer = document.createElement('div');
+    alertContainer.classList.add(this._CSS.wrapper, this._CSS.wrapperForAlertStyle(this.currentType, this.currentStyle));
+
+    const alertIcon = document.createElement('div');
+    alertIcon.classList.add(this._CSS.wrapperForAlertIcon);
+    alertIcon.innerHTML = this._getAlertIcon(this.currentType);
+    console.log(this.currentType);
+    console.log(this._getAlertIcon(this.currentType));
+
+    const alertContent = document.createElement('div');
+    alertContent.classList.add(
+      this._CSS.wrapperForAlertContent, 
+      // this._CSS.input, 
+      this._CSS.wrapperForAlignment(this.currentAlignType)
     );
-    div.appendChild(this.createChildElement());
-    return div;
+    alertContent.innerHTML = this._data.text || '';
+    alertContent.contentEditable = !this._readOnly;
+
+    alertContainer.appendChild(alertIcon);
+    alertContainer.appendChild(alertContent);
+    return alertContainer;
   }
 
   /**
-   * Callback for Delimiter style change to star
-   */
-  _setStar() {
-    if (this.currentDelimiterStyle !== 'star') {
-      this._data.style = 'star';
-
-      // Replace hr child with span child
-      if (this._element.parentNode) {
-        const newElement = this._getElement();
-        this._element.parentNode.replaceChild(newElement, this._element);
-        this._element = newElement;
-      }
-    }
-  }
-
-  /**
-   * Callback for Delimiter style change to dash
-   */
-  _setDash() {
-    if (this.currentDelimiterStyle !== 'dash') {
-      this._data.style = 'dash';
-
-      // Replace hr child with span child
-      if (this._element.parentNode) {
-        const newElement = this._getElement();
-        this._element.parentNode.replaceChild(newElement, this._element);
-        this._element = newElement;
-      }
-    }
-  }
-
-  /**
-   * Callback for Delimiter style change to line or line width change
+   * Callback for Alert type block tune setting
    *
-   * @param {number} newWidth
+   * @param {string} newType
    */
-  _setLine(newWidth) {
-    this._data.lineWidth = newWidth;
+  _setAlertType(newType) {
+    this._data.alert = newType|| this.userDefaultType;
 
-    if (this.currentDelimiterStyle !== 'line') {
-      this._data.style = 'line';
-
-      // Replace span child with hr child
-      if (this._element.parentNode) {
-        const newElement = this._getElement();
-        this._element.parentNode.replaceChild(newElement, this._element);
-        this._element = newElement;
-      }
-    } else {
-      // Change hr width
-      const hrElement = this._element.querySelector('hr');
-      hrElement.style.width = `${newWidth}%`;
+    // Create new element and replace old one
+    if (newType !== undefined && this._element.parentNode) {
+      const newAlert = this._getElement();
+      newAlert.children[1].innerHTML = this._element.children[1].innerHTML;
+      this._element.parentNode.replaceChild(newAlert, this._element);
+      this._element = newAlert;
     }
   }
 
   /**
-   * Callback for line thickness change
+   * Callback for Alert style block tune setting
    *
-   * @param {string} newThickness
+   * @param {*} newStyle
    */
-  _setLineThickness(newThickness) {
-    this._data.lineThickness = newThickness;
+  _setAlertStyle(newStyle) {
+    this._data.alertStyle = newStyle|| this.userDefaultStyle;
 
-    // Change hr thickness
-    const hrElement = this._element.querySelector('hr');
-    hrElement.style.borderWidth = newThickness;
+    // Create new element and replace old one
+    if (newStyle !== undefined && this._element.parentNode) {
+      const newAlert = this._getElement();
+      newAlert.innerHTML = this._element.innerHTML;
+      this._element.parentNode.replaceChild(newAlert, this._element);
+      this._element = newAlert;
+    }
+  }
+
+  /**
+   * Callback for Alignment block tune setting
+   *
+   * @param {string} newAlign
+   */
+  _setAlignType(newAlign) {
+    this._data.align = newAlign;
+
+    // Remove old CSS class and add new class
+    Alert.ALIGN_TYPES.forEach((align) => {
+      const alignClass = this._CSS.wrapperForAlignment(align);
+      this._element.children[1].classList.remove(alignClass);
+      if (newAlign === align) {
+        this._element.children[1].classList.add(alignClass);
+      }
+    });
   }
 
   /**
@@ -420,15 +461,57 @@ export default class Delimiter {
    * Editor.js save method to extract block data from the UI
    *
    * @param {*} blockContent
-   * @returns {{ style: string; lineWidth: number; lineThickness: string; }}
+   * @returns {{ text: string; alert: string; alertStyle: string; align: string; }}
    */
-  save() {
+  save(blockContent) {
     return {
-      style: this.currentDelimiterStyle,
-      lineWidth: this.currentLineWidth,
-      lineThickness: this.currentLineThickness,
+      text: blockContent.innerHTML,
+      alert: this.currentType,
+      alertStyle: this.currentStyle,
+      align: this.currentAlignType,
     };
   }
+
+  /**
+   * Editor.js validation (on save) code for this block
+   * - Skips empty blocks
+   *
+   * @param {*} savedData
+   * @returns {boolean}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  validate(savedData) {
+    return savedData.text.trim() !== '';
+  }
+
+  /**
+   * Get formatted label for Block settings menu
+   *
+   * @param {string} name
+   * @returns {string}
+   */
+  _getFormattedLabel(name) {
+    return this._api.i18n.t(name.charAt(0).toUpperCase() + name.slice(1));
+  }
+
+  /**
+   * Create a Block menu setting
+   *
+   * @param {string} icon
+   * @param {string} label
+   * @param {*} onActivate
+   * @param {boolean} isActive
+   * @param {string} group
+   * @returns {{ icon: string; label: string; onActivate: any; isActive: boolean; closeOnActivate: boolean; toggle: string; }}
+   */
+  _createSetting = (icon, label, onActivate, isActive, group) => ({
+    icon,
+    label,
+    onActivate,
+    isActive,
+    closeOnActivate: true,
+    toggle: group,
+  });
 
   /**
    * Block Tunes Menu items
@@ -436,42 +519,46 @@ export default class Delimiter {
    * @returns {[{*}]}
    */
   renderSettings() {
-    const starStyle = [{
-      icon: IconDelimiter,
-      label: 'Star',
-      onActivate: () => this._setStar(),
-      isActive: this.currentDelimiterStyle === 'star',
-      closeOnActivate: true,
-      toggle: 'star',
-    }];
-    const dashStyle = [{
-      icon: IconDelimiter,
-      label: 'Dash',
-      onActivate: () => this._setDash(),
-      isActive: this.currentDelimiterStyle === 'dash',
-      closeOnActivate: true,
-      toggle: 'dash',
-    }];
-    const lineWidths = this.availableLineWidths.map((width) => ({
-      icon: IconDelimiter,
-      label: `Line ${width}%`,
-      onActivate: () => this._setLine(width),
-      isActive: this.currentDelimiterStyle === 'line' && width === this.currentLineWidth,
-      closeOnActivate: true,
-      toggle: 'line',
-    }));
-    let lineThickness = [];
-    if (this.currentDelimiterStyle === 'line') {
-      lineThickness = this.availableLineThickness.map((thickness) => ({
-        icon: IconDelimiter,
-        label: `Thickness ${parseInt(parseFloat(thickness) * 2, 10)}`,
-        onActivate: () => this._setLineThickness(thickness),
-        isActive: thickness === this.currentLineThickness,
-        closeOnActivate: true,
-        toggle: 'thickness',
-      }));
+    const alertTypes = this.availableTypes.map((type) => 
+      this._createSetting(
+        this._getAlertIcon(type), this._getFormattedLabel(type), () => this._setAlertType(type), 
+        type === this.currentType, 'alert'
+      )
+    );
+
+    let alertStyles = [];
+    if (this.availableStyles.length > 1) {
+      alertStyles = this.availableStyles.map((style) => 
+        this._createSetting(
+          this._getAlertStyleIcon(style), this._getFormattedLabel(style), () => this._setAlertStyle(style), 
+          style === this.currentStyle, 'alert-style'
+        )
+      );
     }
 
-    return [...starStyle, ...dashStyle, ...lineWidths, ...lineThickness];
+    const alignTypes = this.availableAlignTypes.map((align) => 
+      this._createSetting(
+        getAlignmentIcon(align), this._getFormattedLabel(align), () => this._setAlignType(align), 
+        align === this.currentAlignType, 'align'
+      )
+    );
+
+    return [...alertTypes, ...alertStyles, ...alignTypes];
+  }
+
+  /**
+   * Editor.js method to merge similar blocks on `Backspace` keypress
+   *
+   * @param {*} data
+   */
+  merge(data) {
+    // Extracting alert content from new block
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data.text || '', 'text/html');
+    const alertContent = doc.querySelector(`.${this._CSS.wrapperForAlertContent}`);
+    const alertContentText = alertContent ? alertContent.textContent : '';
+    
+    // Appending to previous block
+    this._element.children[1].innerHTML = this._element.children[1].innerHTML + alertContentText || '';
   }
 }
