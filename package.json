@@ -1,7 +1,7 @@
 {
   "name": "@coolbytes/editorjs-alerts",
   "description": "Alerts block tool for Editor.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": false,
   "homepage": "https://apps.coolbytes.in/editorjs-alerts",
   "license": "MIT",
