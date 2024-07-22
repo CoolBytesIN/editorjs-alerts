@@ -380,17 +380,16 @@ export default class Alert {
     alertIcon.classList.add(this._CSS.wrapperForAlertIcon);
     alertIcon.innerHTML = this._getAlertIcon(this.currentType);
 
-    const alertContent = document.createElement('div');
-    alertContent.classList.add(
-      this._CSS.wrapperForAlertContent, 
-      // this._CSS.input, 
+    this._alertContent = document.createElement('div');
+    this._alertContent.classList.add(
+      this._CSS.wrapperForAlertContent,
       this._CSS.wrapperForAlignment(this.currentAlignType)
     );
-    alertContent.innerHTML = this._data.text || '';
-    alertContent.contentEditable = !this._readOnly;
+    this._alertContent.innerHTML = this._data.text || '';
+    this._alertContent.contentEditable = !this._readOnly;
 
     alertContainer.appendChild(alertIcon);
-    alertContainer.appendChild(alertContent);
+    alertContainer.appendChild(this._alertContent);
     return alertContainer;
   }
 
@@ -400,12 +399,12 @@ export default class Alert {
    * @param {string} newType
    */
   _setAlertType(newType) {
+    this._data.text = this._alertContent.innerHTML;
     this._data.alert = newType|| this.userDefaultType;
 
     // Create new element and replace old one
     if (newType !== undefined && this._element.parentNode) {
       const newAlert = this._getElement();
-      newAlert.children[1].innerHTML = this._element.children[1].innerHTML;
       this._element.parentNode.replaceChild(newAlert, this._element);
       this._element = newAlert;
     }
@@ -417,12 +416,12 @@ export default class Alert {
    * @param {*} newStyle
    */
   _setAlertStyle(newStyle) {
+    this._data.text = this._alertContent.innerHTML;
     this._data.alertStyle = newStyle|| this.userDefaultStyle;
 
     // Create new element and replace old one
     if (newStyle !== undefined && this._element.parentNode) {
       const newAlert = this._getElement();
-      newAlert.innerHTML = this._element.innerHTML;
       this._element.parentNode.replaceChild(newAlert, this._element);
       this._element = newAlert;
     }
@@ -439,9 +438,9 @@ export default class Alert {
     // Remove old CSS class and add new class
     Alert.ALIGN_TYPES.forEach((align) => {
       const alignClass = this._CSS.wrapperForAlignment(align);
-      this._element.children[1].classList.remove(alignClass);
+      this._alertContent.classList.remove(alignClass);
       if (newAlign === align) {
-        this._element.children[1].classList.add(alignClass);
+        this._alertContent.classList.add(alignClass);
       }
     });
   }
@@ -458,12 +457,11 @@ export default class Alert {
   /**
    * Editor.js save method to extract block data from the UI
    *
-   * @param {*} blockContent
    * @returns {{ text: string; alert: string; alertStyle: string; align: string; }}
    */
-  save(blockContent) {
+  save() {
     return {
-      text: blockContent.innerHTML,
+      text: this._alertContent.innerHTML,
       alert: this.currentType,
       alertStyle: this.currentStyle,
       align: this.currentAlignType,
@@ -547,13 +545,6 @@ export default class Alert {
    * @param {*} data
    */
   merge(data) {
-    // Extracting alert content from new block
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data.text || '', 'text/html');
-    const alertContent = doc.querySelector(`.${this._CSS.wrapperForAlertContent}`);
-    const alertContentText = alertContent ? alertContent.textContent : '';
-    
-    // Appending to previous block
-    this._element.children[1].innerHTML = this._element.children[1].innerHTML + alertContentText || '';
+    this._alertContent.innerHTML = this._alertContent.innerHTML + data.text || '';
   }
 }
