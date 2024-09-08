@@ -5,21 +5,21 @@ This block tool provides alert banners for [Editor.js](https://editorjs.io/). Th
 ## Preview
 
 #### Block Tool
-![alerts](https://api.coolbytes.in/media/handle/view/image/302/)
+![alerts](https://api.coolbytes.in/media/handle/view/image/02af0d3e-a0a6-440e-8514-a19ebca37957/)
 
 #### Block Settings
-![settings](https://api.coolbytes.in/media/handle/view/image/303/)
+![settings](https://api.coolbytes.in/media/handle/view/image/c29653e0-5081-4329-8673-34c321e85a61/)
 
 ## Styles
 
 ##### Pastel (Default)
-![pastel](https://api.coolbytes.in/media/handle/view/image/304/)
+![pastel](https://api.coolbytes.in/media/handle/view/image/a5cb4a60-dfe3-4580-9ac4-1d7cf841d6d8/)
 
 ##### Solid
-![solid](https://api.coolbytes.in/media/handle/view/image/305/)
+![solid](https://api.coolbytes.in/media/handle/view/image/1acc505e-ce60-4211-b400-fe92da8d36fe/)
 
 ##### Outlined
-![outlined](https://api.coolbytes.in/media/handle/view/image/306/)
+![outlined](https://api.coolbytes.in/media/handle/view/image/4d18aad7-fadb-484c-a04d-f66d1195a4a1/)
 
 ## Installation
 
